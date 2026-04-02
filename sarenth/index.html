@@ -1630,7 +1630,7 @@
     let mode = 'discharge';
     let tick = 0;
     let lastUpdateTime = 0;
-    const UPDATE_INTERVAL = 2000; // 2秒更新一次，模拟真实BMS数据刷新频率
+    const UPDATE_INTERVAL = 2500; // 2.5秒更新一次
 
     function rand(min, max) { return Math.random() * (max - min) + min; }
 
@@ -1642,53 +1642,14 @@
       });
     }
 
-    function animate(timestamp) {
-      tick++;
-
-      // 每2秒更新一次数据（符合真实BMS系统刷新频率）
-      if (timestamp - lastUpdateTime >= UPDATE_INTERVAL) {
-        lastUpdateTime = timestamp;
-
-        // 缓慢变化目标SOC（约10分钟完成一次充放电循环）
-        if (mode === 'discharge') {
-          targetSoc = Math.max(60, targetSoc - rand(0.5, 1.5));
-          if (targetSoc <= 60) mode = 'charge';
-        } else {
-          targetSoc = Math.min(90, targetSoc + rand(0.5, 1.5));
-          if (targetSoc >= 90) mode = 'discharge';
-        }
-      }
-
-      // 平滑插值SOC
-      soc += (targetSoc - soc) * 0.05;
-      soc = Math.max(55, Math.min(95, soc));
-
-      // 基础功率（基于充放电模式）
-      const basePower = mode === 'discharge' ? rand(8, 12) : rand(4, 7);
-
-      // 电压随SOC轻微波动（真实BMS特征）
-      const voltage = 510 + (soc / 100) * 8 + rand(-1, 1);
-
-      // 电流计算
-      const current = (basePower * 1000) / voltage;
-
-      // 剩余时间
-      const remaining = (soc / 100 * 14.3) / Math.abs(basePower);
-
-      // 温度缓慢变化
-      const temp = 30 + rand(-1, 2);
-
-      // 更新DOM
-      if (batPercent) {
-        batPercent.innerHTML = Math.round(soc) + '<span>%</span>';
-      }
-      if (batFill) {
-        batFill.style.height = soc + '%';
-      }
+    function updateDisplay(power, voltage, current, remaining, temp) {
+      if (batPercent) batPercent.innerHTML = Math.round(soc) + '<span>%</span>';
+      if (batFill) batFill.style.height = soc + '%';
+      
       if (powerVal) {
-        powerVal.innerHTML = basePower.toFixed(1) + ' <small>kW</small>';
+        powerVal.innerHTML = power.toFixed(1) + ' <small>kW</small>';
         const bar = powerVal.parentElement.querySelector('.stat-card-bar-fill');
-        if (bar) bar.style.setProperty('--bar-w', (basePower / 15 * 100) + '%');
+        if (bar) bar.style.setProperty('--bar-w', (power / 15 * 100) + '%');
       }
       if (voltageVal) {
         voltageVal.innerHTML = voltage.toFixed(0) + ' <small>V</small>';
@@ -1705,25 +1666,57 @@
         const bar = remainVal.parentElement.querySelector('.stat-card-bar-fill');
         if (bar) bar.style.setProperty('--bar-w', (remaining / 10 * 100) + '%');
       }
-      if (flowVal) {
-        const loadKw = Math.abs(basePower * 0.65).toFixed(1);
-        flowVal.textContent = loadKw + ' kW';
-      }
-      if (tempVal) {
-        tempVal.textContent = temp.toFixed(0) + '°C';
-      }
-      if (statusDot) {
-        statusDot.style.background = mode === 'charge' ? '#00e676' : '#ff9100';
-      }
+      if (flowVal) flowVal.textContent = Math.abs(power * 0.65).toFixed(1) + ' kW';
+      if (tempVal) tempVal.textContent = temp.toFixed(0) + '°C';
+      if (statusDot) statusDot.style.background = mode === 'charge' ? '#00e676' : '#ff9100';
       if (footerInfo) {
         const items = footerInfo.querySelectorAll('.footer-item');
         if (items[0]) items[0].innerHTML = '<span class="footer-dot green"></span>SOC ' + Math.round(soc) + '%';
         if (items[1]) items[1].innerHTML = '<span class="footer-dot blue"></span>' + (mode === 'charge' ? 'Charging' : 'Discharging');
       }
-
       updateCells();
+    }
+
+    function animate(timestamp) {
+      tick++;
+
+      // 每2.5秒更新一次数据
+      if (timestamp - lastUpdateTime >= UPDATE_INTERVAL) {
+        lastUpdateTime = timestamp;
+
+        // 缓慢变化目标SOC
+        if (mode === 'discharge') {
+          targetSoc = Math.max(60, targetSoc - rand(0.3, 0.8));
+          if (targetSoc <= 60) mode = 'charge';
+        } else {
+          targetSoc = Math.min(90, targetSoc + rand(0.3, 0.8));
+          if (targetSoc >= 90) mode = 'discharge';
+        }
+
+        // 计算各项数据
+        const basePower = mode === 'discharge' ? rand(8, 12) : rand(4, 7);
+        const voltage = 510 + (soc / 100) * 8 + rand(-1, 1);
+        const current = (basePower * 1000) / voltage;
+        const remaining = (soc / 100 * 14.3) / Math.abs(basePower);
+        const temp = 30 + rand(-1, 2);
+
+        // 更新所有显示
+        updateDisplay(basePower, voltage, current, remaining, temp);
+      }
+
+      // SOC数值平滑过渡（每秒多次小幅度更新，让百分比数字更流畅）
+      if (tick % 10 === 0) {
+        soc += (targetSoc - soc) * 0.08;
+        soc = Math.max(55, Math.min(95, soc));
+        if (batPercent) batPercent.innerHTML = Math.round(soc) + '<span>%</span>';
+        if (batFill) batFill.style.height = soc + '%';
+      }
+
       requestAnimationFrame(animate);
     }
+
+    // 初始化显示
+    updateDisplay(10.5, 512, 20.5, 5.2, 31);
 
     // 启动动画
     if (document.readyState === 'loading') {
