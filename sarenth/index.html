@@ -67,7 +67,7 @@
     header.scrolled { background: rgba(255,255,255,0.99); box-shadow: 0 4px 24px rgba(9,72,145,0.10); }
     nav {
       max-width: 1280px; margin: 0 auto;
-      display: flex; align-items: center; justify-content: flex-start;
+      display: flex; align-items: center; justify-content: center;
       padding: 0 24px; height: 80px; gap: 48px;
     }
     .logo {
@@ -193,47 +193,104 @@
     .stat-num { font-size: 28px; font-weight: 800; color: var(--accent); font-family: 'Barlow Condensed', sans-serif; }
     .stat-label { font-size: 12px; color: rgba(200,220,240,0.7); text-transform: uppercase; letter-spacing: 1px; }
 
-    /* Hero visual */
+    /* Hero Battery Dashboard */
     .hero-visual { position: relative; }
-    .hero-card-main {
-      background: rgba(255,255,255,0.06);
+    .battery-dashboard {
+      background: rgba(8,18,40,0.92);
       border: 1px solid rgba(0,188,175,0.25);
       border-radius: 20px; overflow: hidden;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+      backdrop-filter: blur(20px);
     }
-    .hero-card-top { height: 2px; background: var(--gradient); }
-    .hero-img-box {
-      width: 100%; height: 230px; overflow: hidden; position: relative;
+    .dash-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 24px; border-bottom: 1px solid rgba(0,188,175,0.15);
+      background: rgba(0,188,175,0.05);
     }
-    .hero-img-box img { width: 100%; height: 100%; object-fit: cover; }
-    .hero-img-box::after {
-      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 60px;
-      background: linear-gradient(transparent, rgba(10,20,45,0.92));
+    .dash-title { font-size: 13px; font-weight: 700; color: var(--accent); letter-spacing: 1px; text-transform: uppercase; }
+    .dash-status { display: flex; align-items: center; gap: 6px; font-size: 11px; color: rgba(180,210,240,0.7); }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #00e676; animation: pulse-dot 2s infinite; }
+    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .dash-body { padding: 24px; display: grid; grid-template-columns: 1fr 1.6fr; gap: 24px; align-items: start; }
+    .battery-main { text-align: center; }
+    .battery-visual { position: relative; margin-bottom: 16px; }
+    .battery-body {
+      width: 100%; height: 180px; border: 3px solid rgba(0,188,175,0.4);
+      border-radius: 16px; background: rgba(0,188,175,0.03);
+      position: relative; overflow: hidden; display: flex; flex-direction: column;
     }
-    .hero-card-body { padding: 20px 28px 26px; }
-    .card-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
-    .card-model { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; color: var(--accent); }
-    .card-tag {
-      padding: 4px 10px; border-radius: 4px;
-      background: rgba(9,72,145,0.12); border: 1px solid rgba(9,72,145,0.3);
-      font-size: 11px; font-weight: 600; color: #90b8e8; letter-spacing: 1px;
+    .battery-body::before {
+      content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+      width: 40px; height: 10px; border: 3px solid rgba(0,188,175,0.4);
+      border-bottom: none; border-radius: 8px 8px 0 0;
     }
-    .card-specs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    .spec-item { text-align: center; background: rgba(0,188,175,0.05); border-radius: 8px; padding: 10px 6px; border: 1px solid rgba(0,188,175,0.15); }
-    .spec-val { font-size: 17px; font-weight: 700; color: #fff; }
-    .spec-key { font-size: 11px; color: rgba(180,210,240,0.65); margin-top: 2px; }
-    .float-card {
-      position: absolute; background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(0,188,175,0.28); border-radius: 12px;
-      padding: 12px 16px; font-size: 12px; backdrop-filter: blur(12px);
+    .battery-fill {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 0%; background: linear-gradient(180deg, rgba(0,230,118,0.3), rgba(0,230,118,0.6));
+      animation: charge-fill 8s ease-in-out infinite;
+      transition: height 1s ease;
     }
-    .float-card-1 { top: -20px; right: -20px; animation: float1 4s ease-in-out infinite; }
-    .float-card-2 { bottom: -10px; left: -20px; animation: float2 5s ease-in-out infinite; }
-    @keyframes float1 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-    @keyframes float2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(8px)} }
-    .float-label { color: rgba(180,210,240,0.65); margin-bottom: 4px; }
-    .float-val { color: var(--accent); font-weight: 700; font-size: 14px; }
+    @keyframes charge-fill { 0%,100%{height:72%} 50%{height:88%} }
+    .battery-cells {
+      position: absolute; top: 8px; left: 8px; right: 8px; bottom: 8px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .cell-row { display: flex; gap: 4px; flex: 1; }
+    .cell { flex: 1; border-radius: 4px; background: rgba(0,188,175,0.08); }
+    .cell.charged { background: rgba(0,230,118,0.4); animation: cell-glow 2s ease-in-out infinite; }
+    @keyframes cell-glow { 0%,100%{opacity:0.7} 50%{opacity:1} }
+    .battery-percent { font-size: 48px; font-weight: 900; color: #fff; font-family: 'Barlow Condensed', sans-serif; line-height: 1; }
+    .battery-percent span { font-size: 24px; color: rgba(180,210,240,0.6); }
+    .battery-label { font-size: 12px; color: rgba(180,210,240,0.5); margin-top: 4px; letter-spacing: 2px; text-transform: uppercase; }
+    .dash-stats { display: flex; flex-direction: column; gap: 14px; }
+    .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat-card {
+      background: rgba(0,188,175,0.05); border: 1px solid rgba(0,188,175,0.15);
+      border-radius: 12px; padding: 14px; position: relative; overflow: hidden;
+    }
+    .stat-card::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%;
+    }
+    .stat-card.green::before { background: #00e676; }
+    .stat-card.blue::before { background: #2979ff; }
+    .stat-card.orange::before { background: #ff9100; }
+    .stat-card.purple::before { background: #aa00ff; }
+    .stat-card-label { font-size: 10px; color: rgba(180,210,240,0.5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+    .stat-card-val { font-size: 20px; font-weight: 800; color: #fff; font-family: 'Barlow Condensed', sans-serif; }
+    .stat-card-val small { font-size: 12px; color: rgba(180,210,240,0.5); font-weight: 400; }
+    .stat-card-bar { margin-top: 8px; height: 4px; background: rgba(0,188,175,0.1); border-radius: 2px; overflow: hidden; }
+    .stat-card-bar-fill { height: 100%; border-radius: 2px; animation: bar-fill 3s ease-out forwards; }
+    .stat-card.green .stat-card-bar-fill { background: linear-gradient(90deg, #00e676, #69f0ae); }
+    .stat-card.blue .stat-card-bar-fill { background: linear-gradient(90deg, #2979ff, #82b1ff); }
+    .stat-card.orange .stat-card-bar-fill { background: linear-gradient(90deg, #ff9100, #ffd180); }
+    .stat-card.purple .stat-card-bar-fill { background: linear-gradient(90deg, #aa00ff, #ea80fc); }
+    @keyframes bar-fill { 0%{width:0%} 100%{width:var(--bar-w)} }
+    .energy-flow {
+      background: rgba(0,188,175,0.05); border: 1px solid rgba(0,188,175,0.15);
+      border-radius: 12px; padding: 16px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px;
+    }
+    .flow-source { display: flex; flex-direction: column; gap: 8px; }
+    .flow-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: rgba(180,210,240,0.7); }
+    .flow-icon { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .flow-icon.solar { background: rgba(255,193,7,0.2); }
+    .flow-icon.grid { background: rgba(41,121,255,0.2); }
+    .flow-icon.load { background: rgba(255,145,0,0.2); }
+    .flow-arrow { font-size: 20px; color: var(--accent); animation: arrow-pulse 1.5s ease-in-out infinite; }
+    @keyframes arrow-pulse { 0%,100%{opacity:0.5;transform:scale(1)} 50%{opacity:1;transform:scale(1.1)} }
+    .flow-val { font-size: 14px; font-weight: 700; color: #fff; }
+    .dash-footer {
+      padding: 14px 24px; border-top: 1px solid rgba(0,188,175,0.15);
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(0,188,175,0.03);
+    }
+    .footer-info { display: flex; gap: 20px; }
+    .footer-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: rgba(180,210,240,0.6); }
+    .footer-dot { width: 6px; height: 6px; border-radius: 50%; }
+    .footer-dot.green { background: #00e676; }
+    .footer-dot.blue { background: #2979ff; }
+    .footer-dot.orange { background: #ff9100; }
+    .temp-bar { display: flex; align-items: center; gap: 6px; }
+    .temp-val { font-size: 12px; font-weight: 700; color: #fff; }
 
     /* ===== SECTION BASE ===== */
     section { padding: 100px 0; }
@@ -703,39 +760,81 @@
       </div>
     </div>
     <div class="hero-visual fade-up" style="transition-delay:0.2s">
-      <div class="hero-card-main">
-        <div class="hero-card-top"></div>
-        <div class="hero-img-box">
-          <img src="images/hero-product.jpg" alt="Energy Storage Battery System" loading="lazy" />
+      <div class="battery-dashboard">
+        <div class="dash-header">
+          <div class="dash-title">⚡ Battery Management System</div>
+          <div class="dash-status"><span class="status-dot"></span> System Online</div>
         </div>
-        <div class="hero-card-body">
-          <div class="card-info">
-            <div class="card-model">SAR-WM-16S280</div>
-            <span class="card-tag">LiFePO₄</span>
+        <div class="dash-body">
+          <div class="battery-main">
+            <div class="battery-visual">
+              <div class="battery-body">
+                <div class="battery-fill"></div>
+                <div class="battery-cells">
+                  <div class="cell-row">
+                    <div class="cell charged"></div><div class="cell charged"></div><div class="cell charged"></div><div class="cell charged"></div>
+                  </div>
+                  <div class="cell-row">
+                    <div class="cell charged"></div><div class="cell charged"></div><div class="cell charged"></div><div class="cell"></div>
+                  </div>
+                  <div class="cell-row">
+                    <div class="cell charged"></div><div class="cell charged"></div><div class="cell"></div><div class="cell"></div>
+                  </div>
+                  <div class="cell-row">
+                    <div class="cell charged"></div><div class="cell"></div><div class="cell"></div><div class="cell"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="battery-percent">78<span>%</span></div>
+            <div class="battery-label">State of Charge</div>
           </div>
-          <div class="card-specs">
-            <div class="spec-item">
-              <div class="spec-val">51.2V</div>
-              <div class="spec-key">Voltage</div>
+          <div class="dash-stats">
+            <div class="stat-row">
+              <div class="stat-card green">
+                <div class="stat-card-label">⚡ Power</div>
+                <div class="stat-card-val">12.8 <small>kW</small></div>
+                <div class="stat-card-bar"><div class="stat-card-bar-fill" style="--bar-w:68%"></div></div>
+              </div>
+              <div class="stat-card blue">
+                <div class="stat-card-label">🔋 Voltage</div>
+                <div class="stat-card-val">512 <small>V</small></div>
+                <div class="stat-card-bar"><div class="stat-card-bar-fill" style="--bar-w:85%"></div></div>
+              </div>
             </div>
-            <div class="spec-item">
-              <div class="spec-val">280Ah</div>
-              <div class="spec-key">Capacity</div>
+            <div class="stat-row">
+              <div class="stat-card orange">
+                <div class="stat-card-label">🔄 Current</div>
+                <div class="stat-card-val">25 <small>A</small></div>
+                <div class="stat-card-bar"><div class="stat-card-bar-fill" style="--bar-w:42%"></div></div>
+              </div>
+              <div class="stat-card purple">
+                <div class="stat-card-label">⏱️ Remaining</div>
+                <div class="stat-card-val">4.2 <small>hrs</small></div>
+                <div class="stat-card-bar"><div class="stat-card-bar-fill" style="--bar-w:55%"></div></div>
+              </div>
             </div>
-            <div class="spec-item">
-              <div class="spec-val">14.3kWh</div>
-              <div class="spec-key">Energy</div>
+            <div class="energy-flow">
+              <div class="flow-source">
+                <div class="flow-item"><div class="flow-icon solar">☀️</div><span>Solar PV</span></div>
+                <div class="flow-item"><div class="flow-icon grid">🏠</div><span>Grid</span></div>
+              </div>
+              <div class="flow-arrow">→</div>
+              <div class="flow-source" style="text-align:right">
+                <div class="flow-item" style="justify-content:flex-end"><span>Load</span><div class="flow-icon load">⚡</div></div>
+                <div class="flow-item" style="justify-content:flex-end"><span class="flow-val">8.5 kW</span></div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-      <div class="float-card float-card-1">
-        <div class="float-label">Cycle Life</div>
-        <div class="float-val">6,500+ cycles</div>
-      </div>
-      <div class="float-card float-card-2">
-        <div class="float-label">Certified</div>
-        <div class="float-val">IEC62619 · CE · UN38.3</div>
+        <div class="dash-footer">
+          <div class="footer-info">
+            <div class="footer-item"><span class="footer-dot green"></span>SOC 78%</div>
+            <div class="footer-item"><span class="footer-dot blue"></span>Grid: Connected</div>
+            <div class="footer-item"><span class="footer-dot orange"></span>Load: Normal</div>
+          </div>
+          <div class="temp-bar">🌡️ <span class="temp-val">32°C</span></div>
+        </div>
       </div>
     </div>
   </div>
