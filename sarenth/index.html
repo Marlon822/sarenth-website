@@ -1611,7 +1611,7 @@
     });
   }
 
-  // ===== Battery Dashboard Animation =====
+  // ===== Battery Dashboard Animation (平缓真实版) =====
   (function initBatteryDashboard() {
     const batPercent = document.querySelector('.battery-percent');
     const batFill = document.querySelector('.battery-fill');
@@ -1627,8 +1627,10 @@
 
     let soc = 78;
     let targetSoc = 78;
-    let mode = 'discharge'; // discharge or charge
+    let mode = 'discharge';
     let tick = 0;
+    let lastUpdateTime = 0;
+    const UPDATE_INTERVAL = 2000; // 2秒更新一次，模拟真实BMS数据刷新频率
 
     function rand(min, max) { return Math.random() * (max - min) + min; }
 
@@ -1640,41 +1642,43 @@
       });
     }
 
-    function animate() {
+    function animate(timestamp) {
       tick++;
 
-      // Slowly change target SOC
-      if (tick % 120 === 0) {
+      // 每2秒更新一次数据（符合真实BMS系统刷新频率）
+      if (timestamp - lastUpdateTime >= UPDATE_INTERVAL) {
+        lastUpdateTime = timestamp;
+
+        // 缓慢变化目标SOC（约10分钟完成一次充放电循环）
         if (mode === 'discharge') {
-          targetSoc = Math.max(55, targetSoc - rand(3, 8));
-          if (targetSoc <= 55) mode = 'charge';
+          targetSoc = Math.max(60, targetSoc - rand(0.5, 1.5));
+          if (targetSoc <= 60) mode = 'charge';
         } else {
-          targetSoc = Math.min(95, targetSoc + rand(4, 10));
-          if (targetSoc >= 95) mode = 'discharge';
+          targetSoc = Math.min(90, targetSoc + rand(0.5, 1.5));
+          if (targetSoc >= 90) mode = 'discharge';
         }
       }
 
-      // Smoothly interpolate SOC
-      soc += (targetSoc - soc) * 0.02;
-      soc = Math.max(20, Math.min(99, soc));
+      // 平滑插值SOC
+      soc += (targetSoc - soc) * 0.05;
+      soc = Math.max(55, Math.min(95, soc));
 
-      // Power fluctuates realistically
-      const basePower = mode === 'discharge' ? 10 : 6;
-      const power = basePower + rand(-3, 3);
+      // 基础功率（基于充放电模式）
+      const basePower = mode === 'discharge' ? rand(8, 12) : rand(4, 7);
 
-      // Voltage stays around 512V with small variations
-      const voltage = 512 + rand(-5, 5);
+      // 电压随SOC轻微波动（真实BMS特征）
+      const voltage = 510 + (soc / 100) * 8 + rand(-1, 1);
 
-      // Current = Power / Voltage
-      const current = (power * 1000) / voltage;
+      // 电流计算
+      const current = (basePower * 1000) / voltage;
 
-      // Remaining time (hours)
-      const remaining = (soc / 100 * 14.3) / Math.abs(power);
+      // 剩余时间
+      const remaining = (soc / 100 * 14.3) / Math.abs(basePower);
 
-      // Temperature
-      const temp = 30 + rand(-2, 4);
+      // 温度缓慢变化
+      const temp = 30 + rand(-1, 2);
 
-      // Update DOM
+      // 更新DOM
       if (batPercent) {
         batPercent.innerHTML = Math.round(soc) + '<span>%</span>';
       }
@@ -1682,37 +1686,34 @@
         batFill.style.height = soc + '%';
       }
       if (powerVal) {
-        powerVal.innerHTML = power.toFixed(1) + ' <small>kW</small>';
+        powerVal.innerHTML = basePower.toFixed(1) + ' <small>kW</small>';
         const bar = powerVal.parentElement.querySelector('.stat-card-bar-fill');
-        if (bar) bar.style.setProperty('--bar-w', (power / 15 * 100) + '%');
+        if (bar) bar.style.setProperty('--bar-w', (basePower / 15 * 100) + '%');
       }
       if (voltageVal) {
-        voltageVal.innerHTML = Math.round(voltage) + ' <small>V</small>';
+        voltageVal.innerHTML = voltage.toFixed(0) + ' <small>V</small>';
         const bar = voltageVal.parentElement.querySelector('.stat-card-bar-fill');
-        if (bar) bar.style.setProperty('--bar-w', ((voltage - 480) / 40 * 100) + '%');
+        if (bar) bar.style.setProperty('--bar-w', ((voltage - 500) / 20 * 100) + '%');
       }
       if (currentVal) {
         currentVal.innerHTML = current.toFixed(1) + ' <small>A</small>';
         const bar = currentVal.parentElement.querySelector('.stat-card-bar-fill');
-        if (bar) bar.style.setProperty('--bar-w', (current / 40 * 100) + '%');
+        if (bar) bar.style.setProperty('--bar-w', (current / 35 * 100) + '%');
       }
       if (remainVal) {
         remainVal.innerHTML = remaining.toFixed(1) + ' <small>hrs</small>';
         const bar = remainVal.parentElement.querySelector('.stat-card-bar-fill');
-        if (bar) bar.style.setProperty('--bar-w', (remaining / 8 * 100) + '%');
+        if (bar) bar.style.setProperty('--bar-w', (remaining / 10 * 100) + '%');
       }
       if (flowVal) {
-        const loadKw = Math.abs(power * 0.7).toFixed(1);
+        const loadKw = Math.abs(basePower * 0.65).toFixed(1);
         flowVal.textContent = loadKw + ' kW';
       }
       if (tempVal) {
-        tempVal.textContent = Math.round(temp) + '°C';
+        tempVal.textContent = temp.toFixed(0) + '°C';
       }
       if (statusDot) {
-        // Blink when switching modes
-        if (tick % 60 === 0) {
-          statusDot.style.background = mode === 'charge' ? '#00e676' : '#ff9100';
-        }
+        statusDot.style.background = mode === 'charge' ? '#00e676' : '#ff9100';
       }
       if (footerInfo) {
         const items = footerInfo.querySelectorAll('.footer-item');
@@ -1724,11 +1725,11 @@
       requestAnimationFrame(animate);
     }
 
-    // Start when DOM ready
+    // 启动动画
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', animate);
+      document.addEventListener('DOMContentLoaded', () => requestAnimationFrame(animate));
     } else {
-      animate();
+      requestAnimationFrame(animate);
     }
   })();
 </script>
