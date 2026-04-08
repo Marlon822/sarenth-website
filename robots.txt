@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://sarenth.com/sitemap.xml
+
+# Disallow admin or private paths (none currently, placeholder)
+# Disallow: /admin/
+
+# Crawl delay (optional, for polite crawlers)
+Crawl-delay: 5
